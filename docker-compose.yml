@@ -1,0 +1,50 @@
+version: '3'
+
+networks:
+  ohtic:
+
+services:
+
+  # nginx
+  nginx-ohtic-service:
+    image: nginx:stable-alpine
+    container_name: nginx-ohtic-container
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www/project
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php-ohtic-service
+      - mysql-ohtic-service
+    tty: true
+    networks:
+      - ohtic
+
+  # php
+  php-ohtic-service:
+    build:
+      context: .
+      dockerfile: ./php/Dockerfile
+    container_name: php-ohtic-container
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./app:/var/www/project
+    networks:
+      - ohtic
+
+  # mysql
+  mysql-ohtic-service:
+    image: mysql:8
+    container_name: mysql-ohtic-container
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_USER: admin
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: admin
+    networks:
+      - ohtic
